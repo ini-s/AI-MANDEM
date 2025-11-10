@@ -32,9 +32,13 @@ def get_users(data):
     users = set()
     for transaction in data:
         users.add(transaction["SenderName"])
-    return users
+    return list(users)
+
+print(get_users(data))
 
 def rapid_sucession(data, user):
+    fraud_count = 0
+    fraud = []
     the_guy = [transaction for transaction in data if transaction["SenderName"] == user]
     the_guy.sort(key=lambda x: datetime.strptime(x["Timestamp"], "%Y-%m-%dT%H:%M:%S%z"))
 
@@ -46,6 +50,23 @@ def rapid_sucession(data, user):
             print("Potential rapid succession fraud detected:")
             print(f"Transaction 1: {transaction}")
             print(f"Transaction 2: {the_guy[id + 1]}")
+            fraud_count += 1
+            fraud.append(transaction)
 
-rapid_sucession(data, "Olusegun Adetola")
+            if fraud_count >= 3:
+                print("Rapid succession fraud confirmed:")
+                fraud.append(the_guy[id + 1])
+                print(fraud)
 
+        else:
+            fraud_count = 0
+    try:
+        with open('rapid_succession_fraud.json', 'w', encoding='utf-8') as f:
+            json.dump(fraud, f, indent=4, ensure_ascii=False)
+    except Exception as e:
+        print(f"Error writing to file: {e}")
+
+# rapid_sucession(data, "Olusegun Adetola")
+
+for user in get_users(data):
+    rapid_sucession(data, user)
