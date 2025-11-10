@@ -26,8 +26,6 @@ def amount_threshold(data, threshold=1330265):
 # print(len(filtered))
 
 
-# df = data.copy()
-
 def get_users(data):
     users = set()
     for transaction in data:
