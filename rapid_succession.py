@@ -2,11 +2,14 @@ import json
 from datetime import datetime, timedelta
 
 
-with open ("transactions.json") as data:
-    data = json.load(data)
+
+def load_data():
+    with open ("sample_transactions.json") as data:
+        data = json.load(data)
+    return data
 
 
-def amount_threshold(data, threshold=1330265):
+def amount_threshold(data=load_data(), threshold=61907):
     filtered_transactions = []
     for transaction in data:
 
@@ -22,49 +25,77 @@ def amount_threshold(data, threshold=1330265):
     return filtered_transactions
 
 
-# filtered = amount_threshold(data)
-# print(len(filtered))
-
-
-def get_users(data):
+def get_users(data=load_data()):
     users = set()
     for transaction in data:
         users.add(transaction["SenderName"])
     return list(users)
 
-print(get_users(data))
 
-def rapid_sucession(data, user):
-    fraud_count = 0
+def rapid_sucession():
+    data=load_data()
+    fraud_sequences = []
     fraud = []
-    the_guy = [transaction for transaction in data if transaction["SenderName"] == user]
-    the_guy.sort(key=lambda x: datetime.strptime(x["Timestamp"], "%Y-%m-%dT%H:%M:%S%z"))
+    
+    # get all users automatically
+    users = get_users(data)
 
-    for id, transaction in enumerate(the_guy[:-1]):
-        current_time = datetime.strptime(transaction["Timestamp"], "%Y-%m-%dT%H:%M:%S%z")
-        next_time = datetime.strptime(the_guy[id + 1]["Timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+    #create an iterator so we can use `next()`
+    user_iter = iter(users)
 
-        if next_time - current_time <= timedelta(minutes=1):
-            print("Potential rapid succession fraud detected:")
-            print(f"Transaction 1: {transaction}")
-            print(f"Transaction 2: {the_guy[id + 1]}")
-            fraud_count += 1
-            fraud.append(transaction)
+    #  loop through users using next()
+    while True:
+        try:
+            user = next(user_iter)
+        except StopIteration:
+            break  # stop when no more users
 
-            if fraud_count >= 3:
-                print("Rapid succession fraud confirmed:")
-                fraud.append(the_guy[id + 1])
-                print(fraud)
+        # Filter this user's transactions
+        the_guy = [transaction for transaction in data if transaction["SenderName"] == user]
+        the_guy.sort(key=lambda x: datetime.strptime(x["Timestamp"], "%Y-%m-%dT%H:%M:%S%z"))
 
-        else:
-            fraud_count = 0
+        for idx, transaction in enumerate(the_guy[:-1]):
+            current_time = datetime.strptime(transaction["Timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+            next_time = datetime.strptime(the_guy[idx + 1]["Timestamp"], "%Y-%m-%dT%H:%M:%S%z")
+
+            # If within 1 minute
+            if next_time - current_time <= timedelta(minutes=1):
+                if transaction not in fraud:
+                    fraud.append(transaction)
+                fraud.append(the_guy[idx + 1])
+
+            else:
+                # Break in chain
+                if len(fraud) >= 3:
+                    fraud_sequences.append(fraud)
+                fraud = []
+
+        # Handle end of list
+        if len(fraud) >= 3:
+            fraud_sequences.append(fraud)
+        fraud = []
+
+    # Save all once
+
+    # Flatten the nested fraud_sequences into one list
+    all_fraud_txns = [txn for seq in fraud_sequences for txn in seq]
+
+    successful_transactions = [txn for txn in data if txn not in all_fraud_txns]
+
     try:
         with open('rapid_succession_fraud.json', 'w', encoding='utf-8') as f:
-            json.dump(fraud, f, indent=4, ensure_ascii=False)
+            json.dump(fraud_sequences, f, indent=4, ensure_ascii=False)
+        print(f"✅ {len(fraud_sequences)} rapid succession cases with {len(all_fraud_txns)} individual transactions saved successfully.")
+
+        with open('successful_transactions.json', 'w', encoding='utf-8') as f:
+            json.dump(successful_transactions, f, indent=4, ensure_ascii=False)
+        print(f"✅ {len(successful_transactions)} successfully transactions.")
+
     except Exception as e:
-        print(f"Error writing to file: {e}")
+        print(f"❌ Error writing to file: {e}")
 
-# rapid_sucession(data, "Olusegun Adetola")
+    return fraud_sequences
 
-for user in get_users(data):
-    rapid_sucession(data, user)
+
+threshold_check = amount_threshold()
+all_fraud = rapid_sucession()
