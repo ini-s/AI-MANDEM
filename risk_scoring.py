@@ -71,6 +71,8 @@ def risk_scoring():
 
     write_data(f'{DATA_FOLDER[0]}/medium-risk-transactions.json', medium_risk)
 
+    write_data(f'{DATA_FOLDER[0]}/high-risk-transactions.json', high_risk)
+
     write_data(f'{DATA_FOLDER[0]}/very-high-risk-transactions.json', very_high_risk)
 
     print('All transactions scored and categorized by risk level')
