@@ -1,15 +1,11 @@
-import json
-from datetime import datetime, timedelta
+
+from utils import *
 
 
-
-def load_data():
-    with open ("sample_transactions.json") as data:
-        data = json.load(data)
-    return data
+load_data = load_data("sample_transactions.json")
 
 
-def amount_threshold(data=load_data(), threshold=61907):
+def amount_threshold(data=load_data, threshold=61907):
     filtered_transactions = []
     for transaction in data:
 
@@ -25,7 +21,7 @@ def amount_threshold(data=load_data(), threshold=61907):
     return filtered_transactions
 
 
-def get_users(data=load_data()):
+def get_users(data=load_data):
     users = set()
     for transaction in data:
         users.add(transaction["SenderName"])
@@ -33,7 +29,7 @@ def get_users(data=load_data()):
 
 
 def rapid_sucession():
-    data=load_data()
+    data=load_data
     fraud_sequences = []
     fraud = []
     
@@ -83,12 +79,10 @@ def rapid_sucession():
     successful_transactions = [txn for txn in data if txn not in all_fraud_txns]
 
     try:
-        with open('rapid_succession_fraud.json', 'w', encoding='utf-8') as f:
-            json.dump(fraud_sequences, f, indent=4, ensure_ascii=False)
+        write_data(f'{DATA_FOLDER[1]}/rapid_succession_fraud.json', fraud_sequences)
         print(f"✅ {len(fraud_sequences)} rapid succession cases with {len(all_fraud_txns)} individual transactions saved successfully.")
 
-        with open('successful_transactions.json', 'w', encoding='utf-8') as f:
-            json.dump(successful_transactions, f, indent=4, ensure_ascii=False)
+        write_data(f'{DATA_FOLDER[1]}/successful_transactions.json', successful_transactions)
         print(f"✅ {len(successful_transactions)} successfully transactions.")
 
     except Exception as e:
@@ -97,5 +91,7 @@ def rapid_sucession():
     return fraud_sequences
 
 
-threshold_check = amount_threshold()
-all_fraud = rapid_sucession()
+if __name__=="__main__":
+
+    threshold_check = amount_threshold()
+    all_fraud = rapid_sucession()

@@ -1,9 +1,10 @@
-import json
+from utils import *
 
-def load_data():
-    with open('transactions.json', 'r') as data:
-        data = json.load(data)
-    return data
+
+
+
+
+load_data = load_data("transactions.json")
 
 
 def extract_time(time):
@@ -13,7 +14,7 @@ def extract_time(time):
 
 def search_transaction():
     search = input("Enter transaction id: ")
-    data = load_data()
+    data = load_data
     for transaction in data:
         if search == transaction["TransactionID"]:
             return transaction
@@ -26,7 +27,7 @@ def risk_scoring():
     high_risk = []
     very_high_risk = []
 
-    data = load_data()
+    data = load_data
 
     for transaction in data:
         risk_count = 0
@@ -64,17 +65,13 @@ def risk_scoring():
 
         transaction["Risk_Rating"] = result
 
-    with open('no-risk-transactions.json', 'w') as x:
-        json.dump(no_risk, x, indent=4)
+    write_data(f'{DATA_FOLDER[0]}/no-risk-transactions.json', no_risk)
 
-    with open('low-risk-transactions.json', 'w') as x:
-        json.dump(low_risk, x, indent=4)
+    write_data(f'{DATA_FOLDER[0]}/low-risk-transactions.json', low_risk)
 
-    with open('medium-risk-transactions.json', 'w') as x:
-        json.dump(medium_risk, x, indent=4)
+    write_data(f'{DATA_FOLDER[0]}/medium-risk-transactions.json', medium_risk)
 
-    with open('very-high-risk-transactions.json', 'w') as x:
-        json.dump(very_high_risk, x, indent=4)
+    write_data(f'{DATA_FOLDER[0]}/very-high-risk-transactions.json', very_high_risk)
 
     print('All transactions scored and categorized by risk level')
     print(f'{len(no_risk)} no risk transaction(s)')
@@ -83,4 +80,6 @@ def risk_scoring():
     print(f'{len(high_risk)} high risk transaction(s)')
     print(f'{len(very_high_risk)} very high risk transaction(s)')
 
-risk_scoring()
+
+if __name__=="__main__":
+    risk_scoring()
