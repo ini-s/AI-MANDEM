@@ -1,1 +1,13 @@
 transactions.json
+
+
+.env
+
+venv
+
+data/*
+
+
+__pycache__
+
+pycache
