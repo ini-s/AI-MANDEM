@@ -1,6 +1,8 @@
 import json, os
 from datetime import datetime, timedelta
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 DATA_FOLDER = ["data/risk_scoring", "data/rapid_succession"]
 
 
